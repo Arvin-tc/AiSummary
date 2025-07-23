@@ -17,7 +17,15 @@ app.get('/', (req, res) => {
 });
 
 app.post('/summarize', async(req, res) =>{
-    const {text} = req.body;
+    const {text, length} = req.body;
+
+    let instruction = "Summarize the following text into 3-5 concise sentences.";
+    if (length === 'short') {
+      instruction = "Summarize the following text in 1-2 short sentences.";
+    } else if (length === 'long') {
+      instruction = "Summarize the following text in a detailed paragraph.";
+    }
+
     if (!text) {
         return res.status(400).json({ error: 'Text is required' });
     }
@@ -25,8 +33,8 @@ app.post('/summarize', async(req, res) =>{
         const completion = await openai.chat.completions.create({
             model: 'gpt-3.5-turbo',
             messages:[
-                {role: 'system', content: "You are a helpful assistant that summarizes text into 3-5 concise sentences."},
-                {role: 'user', content: `Please summarize the following text:\n\n${text}`}
+                {role: 'system', content: "You are a helpful assistant that summarizes text."},
+                {role: 'user', content: `${instruction}\n\n${text}`}
             ],});
         const summary = completion.choices[0].message.content;
         res.json({ summary });}
